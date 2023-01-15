@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1" /> 
+<html lang="en">
+    <head>
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936468527848494"
+     crossorigin="anonymous"></script>
+        
+        <meta charset="UTF-8">
+        <title>《無期迷途》服從度計算器 Beta</title>
+        
+        <style>
+            body{
+                background-color: black;
+                color: white;
+            }
+            table {
+                table-layout: auto;
+                border: 1px solid grey;
+            }
+            td {
+            border: 1px solid grey;
+        }
+        </style>
+        
+<!--        ------------------------ Script -------------------------->
+        <script>
+            // ------------------------ default value
+            var canCal = true;  // 
+            var needHP = 11250; // 0% to 50%
+            var needCube = 0;
+            var calCubeBuy = 0;
+            var totalBuyCube = 0;
+            
+            var firstDayLeft = 21; // first day: left 21 hours
+            var middleDay = 5; // 5 days
+            var lastDayLeft = 17; // last day: left 17 hours
+            var totalDay = 7;
+            var calFirstDayLeft = true;
+            var calMiddleDay = true;
+            var calLastDayLeft = true;
+            
+            var showFirstDayMonthlyVIP = false;
+            var showFirstDayOclock11 = false;
+            var showFirstDayOclock5 = false;
+            var showFirstDayFreeHP = false;
+            var valFDBuyHP = 0;
+            var setFirstDayNotBuy = false;
+            
+            var useMonthlyVIP = true; // Monthly Black Key VIP
+            
+            var useAlloyToHP = false; // 加速
+            var alloyToHP = 0; // default: 0 Alloy
+            
+            var useAlloyToHPDaily = false;
+            
+            var additionalHP = 0;
+            
+            var hpNeedBuyDaily = 0;
+            
+            // After Calculation
+            var totalHPGainFirst = 0;
+            var totalHPGainMiddle = 0;
+            var totalHPGainLast = 0;
+            
+            // HP of campliance%
+            var comp1to10 = 750;
+            var comp11to20 = 1500;
+            var comp21to30 = 2250;
+            var comp31to40 = 3000;
+            var comp41to50 = 3750;
+            var comp51to60 = 6000;
+            var comp61to70 = 7500;
+            var comp71to80 = 9000;
+            var comp81to90 = 11250;
+            var comp91to100 = 22500;
+            
+            // Cube of HP
+            var stage1Cube = 40;
+            var stage2Cube = 80;
+            var stage3Cube = 120;
+            var stage4Cube = 200;
+            var stage5Cube = 300;
+
+            
+            // ------------------------ function
+            
+            // get Compliance of each stage
+            // getFull: 1 = 從零開始累計, 2 = 單階段, 3 = 每一%
+            function getCompHP10(getValue) {
+                if (getValue == 1) {
+                    return comp1to10;
+                } else if (getValue == 2) {
+                    return comp1to10;
+                } else if (getValue == 3) {
+                    return comp1to10 / 10;
+                }
+                
+            }
+            function getCompHP20(getValue) {
+                if (getValue == 1) {
+                    return getCompHP10(getValue) + comp11to20;
+                } else if (getValue == 2) {
+                    return comp11to20;
+                } else if (getValue == 3) {
+                    return comp11to20 / 10;
+                }
+            }
+            function getCompHP30(getValue) {
+                if (getValue == 1) {
+                    return getCompHP20(getValue) + comp21to30;
+                } else if (getValue == 2) {
+                    return comp21to30;
+                } else if (getValue == 3) {
+                    return comp21to30 / 10;
+                }
+            }
+            function getCompHP40(getValue) {
+                if (getValue == 1) {
+                    return getCompHP30(getValue) + comp31to40;
+                } else if (getValue == 2) {
+                    return comp31to40;
+                } else if (getValue == 3) {
+                    return comp31to40 / 10;
+                }
+            }
+            function getCompHP50(getValue) {
+                if (getValue == 1) {
+                    return getCompHP40(getValue) + comp41to50;
+                } else if (getValue == 2) {
+                    return comp41to50;
+                } else if (getValue == 3) {
+                    return comp41to50 / 10;
+                }
+            }
+            function getCompHP60(getValue) {
+                if (getValue == 1) {
+                    return getCompHP50(getValue) + comp51to60;
+                } else if (getValue == 2) {
+                    return comp51to60;
+                } else if (getValue == 3) {
+                    return comp51to60 / 10;
+                }
+            }
+            function getCompHP70(getValue) {
+                if (getValue == 1) {
+                    return getCompHP60(getValue) + comp61to70;
+                } else if (getValue == 2) {
+                    return comp61to70;
+                } else if (getValue == 3) {
+                    return comp61to70 / 10;
+                }
+            }
+            function getCompHP80(getValue) {
+                if (getValue == 1) {
+                    return getCompHP70(getValue) + comp71to80;
+                } else if (getValue == 2) {
+                    return comp71to80;
+                } else if (getValue == 3) {
+                    return comp71to80 / 10;
+                }
+            }
+            function getCompHP90(getValue) {
+                if (getValue == 1) {
+                    return getCompHP80(getValue) + comp81to90;
+                } else if (getValue == 2) {
+                    return comp81to90;
+                } else if (getValue == 3) {
+                    return comp81to90 / 10;
+                }
+            }
+            function getCompHP100(getValue) {
+                if (getValue == 1) {
+                    return getCompHP90(getValue) + comp91to100;
+                } else if (getValue == 2) {
+                    return comp91to100;
+                } else if (getValue == 3) {
+                    return comp91to100 / 10;
+                }
+            }
+            
+            // get Compliance
+            function getTargetCompHP(targetComp) {
+                if (targetComp >= 0 && targetComp <= 10) {
+                        return targetComp * getCompHP10(3);
+                    }
+                else if (targetComp >= 11 && targetComp <= 20) {
+                        return (targetComp - 10) * getCompHP20(3) + getCompHP10(1);
+                    }
+                else if (targetComp >= 21 && targetComp <= 30) {
+                        return (targetComp - 20) * getCompHP30(3) + getCompHP20(1);
+                    }
+                else if (targetComp >= 31 && targetComp <= 40) {
+                        return (targetComp - 30) * getCompHP40(3) + getCompHP30(1);
+                    }
+                else if (targetComp >= 41 && targetComp <= 50) {
+                        return (targetComp - 40) * getCompHP50(3) + getCompHP40(1);
+                    }
+                else if (targetComp >= 51 && targetComp <= 60) {
+                        return (targetComp - 50) * getCompHP60(3) + getCompHP50(1);
+                    }
+                else if (targetComp >= 61 && targetComp <= 70) {
+                        return (targetComp - 60) * getCompHP70(3) + getCompHP60(1);
+                    }
+                else if (targetComp >= 71 && targetComp <= 80) {
+                        return (targetComp - 70) * getCompHP80(3) + getCompHP70(1);
+                    }
+                else if (targetComp >= 81 && targetComp <= 90) {
+                        return (targetComp - 80) * getCompHP90(3) + getCompHP80(1);
+                    }
+                else if (targetComp >= 91 && targetComp <= 100) {
+                        return (targetComp - 90) * getCompHP100(3) + getCompHP90(1);
+                    }
+            }
+            
+            // 共需體力
+            function setTargetCompHP() {
+                var presentComp = document.getElementById("id_input_present_comp").value;
+                var targetComp = document.getElementById("id_input_target_comp").value;
+                
+                var needComp = presentComp - targetComp; // 需要服從度
+                
+                // constraint
+                if (targetComp > 100 || 
+                    targetComp < 0 || 
+                    presentComp > 100 || 
+                    presentComp < 0) {
+                    
+                    setPNeedComp("好感度輸入錯誤（請輸入 0～100 之間的數值）");
+                    canCal = false;
+                } 
+                
+                // get HP of compliance %
+                else {
+                    needHP = getTargetCompHP(targetComp) - getTargetCompHP(presentComp);
+                    
+                    setPNeedComp("你大約需要：" + needHP.toString() + " 體力");
+                    canCal = true;
+                }
+            }
+            function setPNeedComp(str) {                
+                document.getElementById("id_p_need_comp").innerHTML = str;
+            }
+            
+            // 日期時間
+            function setDay() {
+                calFirstDayLeft = true;
+                calMiddleDay = true;
+                calLastDayLeft = true;
+                canCal = true;
+                
+                firstDayLeft = document.getElementById("id_input_first_day_left").value;
+                middleDay = document.getElementById("id_input_middle_day").value;
+                lastDayLeft = document.getElementById("id_input_last_day_left").value;
+                var checkBoxFirstDayLeft = document.getElementById("id_checkbox_first_day_left");
+                var checkBoxMiddleDay = document.getElementById("id_checkbox_middle_day");
+                var checkBoxLastDayLeft = document.getElementById("id_checkbox_last_day_left");
+                if (checkBoxFirstDayLeft.checked || firstDayLeft == 0) {
+                    calFirstDayLeft = false;
+                }
+                if (checkBoxMiddleDay.checked || middleDay == 0) {
+                    calMiddleDay = false;
+                }
+                if (checkBoxLastDayLeft.checked || lastDayLeft == 0) {
+                    calLastDayLeft = false;
+                }
+                if (canCal && calFirstDayLeft && (firstDayLeft < 0 || firstDayLeft > 24)) {
+                    calFirstDayLeft = false;
+                    canCal = false;
+                    setPAllDayNull();
+                    setPFirstDayLeft("第 1 天時間輸入錯誤（（請輸入 0～24 之間的數值 或 選擇不計算））");
+                }
+                if (canCal && calMiddleDay && middleDay < 0) {
+                    calMiddleDay = false;
+                    canCal = false;
+                    setPAllDayNull();
+                    setPMiddleDay("中間天數輸入錯誤（（請輸入 0 或以上的數值 或 選擇不計算））");
+                }
+                if (canCal && calLastDayLeft && (lastDayLeft < 0 || lastDayLeft > 24)) {
+                    calLastDayLeft = false;
+                    canCal = false;
+                    setPAllDayNull();
+                    setPFirstDayLeft("最後 1 天時間輸入錯誤（（請輸入 0～24 之間的數值 或 選擇不計算））");
+                }
+                if (canCal) {
+                    displayDay();
+                }
+            }
+            function displayDay() {
+                setPAllDayNull();
+                if (calMiddleDay) {
+                    totalDay = middleDay;
+                    setPMiddleDay("中間還有：" + middleDay + " 天"); 
+                } else {
+                    totalDay = 0;
+                }
+                if (calFirstDayLeft) {
+                    setPFirstDayLeft("第 1 天還剩下：" + firstDayLeft + " 小時");
+                    totalDay++;
+                }
+                if (calLastDayLeft) {
+                    setPLastDayLeft("最後 1 天有：" + lastDayLeft + " 小時");
+                    totalDay++;
+                }
+                setPTotalDayHave("共：" + totalDay + " 天");
+            }
+            function setPFirstDayLeft(str) {                
+                document.getElementById("id_p_first_day_left").innerHTML = str;
+            }
+            function setPMiddleDay(str) {                
+                document.getElementById("id_p_middle_day").innerHTML = str;
+            }
+            function setPLastDayLeft(str) {                
+                document.getElementById("id_p_last_day_left").innerHTML = str;
+            }
+            function setPTotalDayHave(str) {                
+                document.getElementById("id_p_total_day_have").innerHTML = str;
+            }
+            function setPAllDayNull() {
+                setPFirstDayLeft("");
+                setPMiddleDay("");
+                setPLastDayLeft("");
+                setPTotalDayHave("");
+            }
+            
+            // 月卡
+            function setMonthlyVIPCheck() {
+                var checkBox = document.getElementById("id_checkbox_monthly_vip");
+                if (checkBox.checked){
+                    useMonthlyVIP = true;
+                } else {
+                    useMonthlyVIP = false;
+                }
+            }
+            
+            // 合金
+            function setAlloyToHPCheck() {
+                var checkBox = document.getElementById("id_checkbox_alloy_to_hp");
+                var pPresentAlloy = document.getElementById("id_p_present_alloy");
+                var pPresentAlloytoHP = document.getElementById("id_p_alloy_to_hp");
+                
+                if (checkBox.checked){
+                    pPresentAlloy.style.display = "block";
+                    pPresentAlloytoHP.style.display = "block";
+                    useAlloyToHP = true;
+                } else {
+                    pPresentAlloy.style.display = "none";
+                    pPresentAlloytoHP.style.display = "none";
+                    ironHP = 0;
+                    useAlloyToHP = false;
+                }
+            }
+            function setAlloyToHP() {
+                alloyToHP = document.getElementById("id_input_alloy_to_HP").value;
+                if (alloyToHP < 0) {
+                    document.getElementById("id_p_alloy_to_hp").innerHTML = "合金數量輸入錯誤，不使用合金";
+                    alloyToHP = 0;
+                } else {
+                    alloyToHP = Math.floor(alloyToHP/96);
+                    alloyToHP = alloyToHP * 4;
+                    document.getElementById("id_p_alloy_to_hp").innerHTML = "可轉換：" + alloyToHP + " 體力";
+                }
+            }
+            
+            // 每天使用合金
+            function setAlloyToHPDailyCheck() {
+                var checkBox = document.getElementById("id_checkbox_alloy_to_hp_daily");
+                if (checkBox.checked){
+                    useAlloyToHPDaily = true;
+                } else {
+                    useAlloyToHPDaily = false;
+                }
+            }
+            
+            // HP補給
+            function setAdditionalHP() {
+                additionalHP = document.getElementById("id_input_additional_hp").value;
+                if (additionalHP < 0) {
+                    document.getElementById("id_p_additional_hp").innerHTML = "體力補給輸入錯誤，不使用補給";
+                    additionalHP = 0;
+                } else {
+                    document.getElementById("id_p_additional_hp").innerHTML = "體力補給：" + additionalHP + " 體力";
+                }
+                
+            }
+            
+            // 計算結果
+            function calResult() {
+                cleanResult();
+                setTargetCompHP();
+                var calNeedHP = needHP;
+                setDay();
+                totalHPGainFirst = 0;
+                totalHPGainMiddle = 0;
+                totalHPGainLast = 0;
+                
+                // 減合金體力
+                if (useAlloyToHP) {
+                    calNeedHP = calNeedHP - alloyToHP;
+                }
+
+                // 減體力補給
+                calNeedHP = calNeedHP - additionalHP;
+                
+                // 還需體力
+                document.getElementById("id_p_result_needHP").innerHTML = "你大約還需要：" + calNeedHP + " 體力";
+
+                
+//                // ------------------------ 第一天
+                if (calFirstDayLeft) {
+                    var calFDHP = firstDayLeft;
+                    var calFDHPresult = "第 1 天  （還有 " + firstDayLeft + " 小時）";
+                    
+                    // 自然回復
+                    calFDHP = calRecoverHP(firstDayLeft);
+                    calFDHPresult = calFDHPresult + "<br>"
+                    + "自然回復：" + calFDHP + " 體力";
+                    
+                    // 建設
+                    var calAccHP = calAccHPDaily(firstDayLeft);
+                    if (calAccHP >= 4) {
+                        calFDHP = calFDHP + calAccHP;
+                        calFDHPresult = calFDHPresult + "<br>"
+                        + "建設：" + calAccHP + " 體力";
+                    }
+                    
+                    // 整點
+                    var calOCHP = calClockHP(firstDayLeft);
+                    if (showFirstDayOclock11 && showFirstDayOclock5) {
+                        calFDHP = calFDHP + 120;
+                        calFDHPresult = calFDHPresult + "<br>"
+                        + "11點＆5點：120 體力";
+                    } else if (!showFirstDayOclock11 && showFirstDayOclock5){
+                        if (calOCHP >= 120) {
+                            calFDHP = calFDHP + 120;
+                            calFDHPresult = calFDHPresult + "<br>"
+                            + "11點＆5點：120 體力";
+                        } else if (calOCHP <120 && calOCHP >= 60) {
+                            calFDHP = calFDHP + 60;
+                            calFDHPresult = calFDHPresult + "<br>"
+                            + "5點：60 體力";
+                        } else {
+                            calFDHP = calFDHP + 60;
+                            calFDHPresult = calFDHPresult + "<br>"
+                            + "5點：60 體力";
+                        }
+                    } else if (showFirstDayOclock11 && !showFirstDayOclock5){
+                        if (calOCHP >= 120) {
+                            calFDHP = calFDHP + 120;
+                            calFDHPresult = calFDHPresult + "<br>"
+                            + "11點＆5點：120 體力";
+                        } else if (calOCHP <120 && calOCHP >= 60) {
+                            calFDHP = calFDHP + 120;
+                            calFDHPresult = calFDHPresult + "<br>"
+                            + "11點＆5點：120 體力";
+                        } else {
+                            calFDHP = calFDHP + 60;
+                            calFDHPresult = calFDHPresult + "<br>"
+                            + "11點：60 體力";
+                        }
+                    } else if (!showFirstDayOclock11 && !showFirstDayOclock5){
+                        if (calOCHP >= 120) {
+                            calFDHP = calFDHP + 120;
+                            calFDHPresult = calFDHPresult + "<br>"
+                            + "11點＆5點：120 體力";
+                        } else if (calOCHP <120 && calOCHP >= 60) {
+                            calFDHP = calFDHP + 60;
+                            calFDHPresult = calFDHPresult + "<br>"
+                            + "5點：60 體力";
+                        } else if (calOCHP < 60) {
+                        }
+                        
+                        
+                        
+                    }
+                    
+                        if (!calFirstDayLeft) {
+                            var divResulfFDL = document.getElementById("id_div_result_first_day_left");
+                            divResulfFDL.style.display = "none";
+                        } else {
+                            var divResulfFDL = document.getElementById("id_div_result_first_day_left");
+                            divResulfFDL.style.display = "block";
+                        }
+                    
+                    // 月卡
+                    if (useMonthlyVIP && showFirstDayMonthlyVIP) {
+                        calFDHP = calFDHP + 100;
+                        calFDHPresult = calFDHPresult + "<br>"
+                        + "月卡：100 體力";
+                    }
+                    
+                    // 免費補給箱
+                    if (showFirstDayFreeHP) {
+                        calFDHP = calFDHP + 20;
+                        calFDHPresult = calFDHPresult + "<br>"
+                        + "免費補給箱：20 體力";
+                    }
+                    
+                    
+                    // 每天轉換合金
+                    if (useAlloyToHPDaily) {
+                        var calAlloyToHPDaily = calAlloyToHP(firstDayLeft);
+                        if (calAlloyToHPDaily >= 4) {
+                            calFDHP = calFDHP + calAlloyToHPDaily;
+                            calFDHPresult = calFDHPresult + "<br>"
+                            + "每天合金轉換：" + calAlloyToHPDaily + " 體力";
+                        }
+                    }
+                    
+                    totalHPGainFirst = calFDHP;
+                    calFDHPresult = calFDHPresult + "<br>"
+                    + "共：" + totalHPGainFirst + " 體力";
+                    document.getElementById("id_p_result_first_day_left").innerHTML = calFDHPresult;
+                }
+                
+                // ------------------------ 中間天數
+                if (calMiddleDay) {
+                    var calMDHP = middleDay;
+                    var calMDHPresult = "中間有 " + middleDay + " 天";
+                    
+                    // 自然回復
+                    calMDHP = 240;
+                    calMDHPresult = calMDHPresult + "<br>"
+                    + "自然回復：" + calMDHP + " 體力";
+                    
+                    // 建設
+                    calMDHP = calMDHP + 60;
+                    calMDHPresult = calMDHPresult + "<br>"
+                    + "建設：60 體力";
+                    
+                    // 整點
+                    calMDHP = calMDHP + 120;
+                    calMDHPresult = calMDHPresult + "<br>"
+                    + "11點＆5點：120 體力";
+                    
+                    // 月卡
+                    if (useMonthlyVIP) {
+                        calMDHP = calMDHP + 100;
+                        calMDHPresult = calMDHPresult + "<br>"
+                        + "月卡：100 體力";
+                    }
+                    
+                    // 免費補給箱
+                    calMDHP = calMDHP + 20;
+                    calMDHPresult = calMDHPresult + "<br>"
+                    + "免費補給箱：20 體力";
+                    
+                    // 每天轉換合金
+                    if (useAlloyToHPDaily) {
+                        calMDHP = calMDHP + 16;
+                        calMDHPresult = calMDHPresult + "<br>"
+                        + "每天合金轉換：16 體力";
+                    }
+                    
+                    totalHPGainMiddle = calMDHP;
+                    calMDHPresult = calMDHPresult + "<br>"
+                    + "每天共：" + totalHPGainMiddle + " 體力";
+                    
+                    totalHPGainMiddle = totalHPGainMiddle * middleDay;
+                    calMDHPresult = calMDHPresult + "<br>"
+                    + "中間 " + middleDay + " 天共：" + totalHPGainMiddle + " 體力";
+                    
+                    document.getElementById("id_p_result_middle_day").innerHTML = calMDHPresult;                    
+                }
+                
+                // ------------------------ 最後一天
+                if (calLastDayLeft) {
+                    var calLDHP = lastDayLeft
+                    var calLDHPresult = "最後 1 天  （到 " + lastDayLeft + " 小時）";
+                    
+                    // 自然回復
+                    calLDHP = calRecoverHP(lastDayLeft);
+                    calLDHPresult = calLDHPresult + "<br>"
+                    + "自然回復：" + calLDHP + " 體力";
+                    
+                    // 建設
+                    var calAccHP = calAccHPDaily(lastDayLeft);
+                    if (calAccHP >= 4) {
+                        calLDHP = calLDHP + calAccHP;
+                        calLDHPresult = calLDHPresult + "<br>"
+                        + "建設：" + calAccHP + " 體力";
+                    }
+                    
+                    // 整點
+                    var calOCHP = calClockHP(lastDayLeft);
+                    if (calOCHP == 60) {
+                        calLDHP = calLDHP + 60;
+                        calLDHPresult = calLDHPresult + "<br>"
+                        + "5點：60 體力";
+                    } else if (calOCHP == 120) {
+                        calLDHP = calLDHP + 120;
+                        calLDHPresult = calLDHPresult + "<br>"
+                        + "11點＆5點：120 體力";
+                    }
+                    
+                    // 月卡
+                    if (useMonthlyVIP) {
+                        calLDHP = calLDHP + 100;
+                        calLDHPresult = calLDHPresult + "<br>"
+                        + "月卡：100 體力";
+                    }
+                    
+                    // 免費補給箱
+                    calLDHP = calLDHP + 20;
+                    calLDHPresult = calLDHPresult + "<br>"
+                    + "免費補給箱：20 體力";
+                    
+                    // 每天轉換合金
+                    if (useAlloyToHPDaily) {
+                        var calAlloyToHPDaily = calAlloyToHP(lastDayLeft);
+                        if (calAlloyToHPDaily >= 4) {
+                            calLDHP = calLDHP + calAlloyToHPDaily;
+                            calLDHPresult = calLDHPresult + "<br>"
+                            + "每天合金轉換：" + calAlloyToHPDaily + " 體力";
+                        }
+                    }
+                    
+                    totalHPGainLast = calLDHP;
+                    calLDHPresult = calLDHPresult + "<br>"
+                    + "共：" + totalHPGainLast + " 體力";
+
+                    document.getElementById("id_p_result_last_day_left").innerHTML = calLDHPresult;   
+                }
+                
+                
+                // 計算所需異方晶
+                var calCubeGain = totalHPGainFirst + totalHPGainMiddle + totalHPGainLast;
+                var calCubeResult = totalDay + " 天共可得：" + calCubeGain + " 體力";
+                
+                calCubeBuy = calNeedHP - calCubeGain;
+                calCubeResult = calCubeResult + "<br>"
+                + "需購買：" + calCubeBuy + " 體力";
+                
+                var calTotalDay = totalDay;
+                if (setFirstDayNotBuy) {
+                    calTotalDay = calTotalDay - 1;
+                }
+                if (valFDBuyHP > 0) {
+                    
+                }
+                
+                var calCubeBuyDaily = Math.ceil(calCubeBuy / calTotalDay);
+                var calHPBuyDaily = Math.ceil(calCubeBuyDaily / 100);
+                var calCubeBuyHPDaily = calCubeOfHP(calHPBuyDaily);
+                
+                hpNeedBuyDaily = calHPBuyDaily;
+                if (hpNeedBuyDaily > 10) {
+                    hpNeedBuyDaily = 10;
+                }
+//                calCubeResult = calCubeResult + "<br>"
+//                + "平均每天需購：" + calCubeBuyDaily + " 體力 ＝ " + calHPBuyDaily + " 管（最多10管） = " + calCubeBuyHPDaily + " 異方晶";
+//                
+//                if (setFirstDayNotBuy) {
+//                    calCubeResult = calCubeResult + "<br>"
+//                + "（第 1 天不購買體力）";
+//                }
+                
+//                needCube = calCubeBuyHPDaily * calTotalDay;
+//                calCubeResult = calCubeResult + "<br>"
+//                + "共：" + needCube + " 異方晶（詳細看下方表格）";
+                
+//                calCubeResult = calCubeResult + "<br>"
+//                + "（每2管為一階段，每階段需要40、80、120、200、300異方晶，每天最多可買10管）";
+                
+                document.getElementById("id_p_result_cube").innerHTML = calCubeResult;
+                
+//                setBuyHPDaily();
+                genCubeHPTable();
+            }
+            // 自然回復
+            function calRecoverHP(value) {
+                return Math.floor(value * 60 / 6);
+            }
+            // 建設
+            function calAccHPDaily(value) {
+                return  Math.floor(value * 60 / 96) * 4;
+            }
+            // 整點
+            function calClockHP(value) {
+                if (value >= 7) {
+                    if (value >= 13) {
+                        return 120;
+                    }
+                    return 60;
+                }
+            }
+            // 轉換合金
+            function calAlloyToHP(value) {
+                return Math.floor(Math.floor(value * 60 * 60 / 864) * 4 / 96) * 4;
+            }
+            // 計每天需要多少異方晶
+            function calCubeOfHP(value) {
+                if (value == 0) return 0;
+                else if (value == 1) return stage1Cube;
+                else if (value == 2) return calCubeOfHP(1) + stage1Cube;
+                else if (value == 3) return calCubeOfHP(2) + stage2Cube;
+                else if (value == 4) return calCubeOfHP(3) + stage2Cube;
+                else if (value == 5) return calCubeOfHP(4) + stage3Cube;
+                else if (value == 6) return calCubeOfHP(5) + stage3Cube;
+                else if (value == 7) return calCubeOfHP(6) + stage4Cube;
+                else if (value == 8) return calCubeOfHP(7) + stage4Cube;
+                else if (value == 9) return calCubeOfHP(8) + stage5Cube;
+                else if (value >= 10) return calCubeOfHP(9) + stage5Cube;             
+            }
+            
+            // 計平均每天購買會多用
+            function setBuyHPDaily() {
+                var hpBuyDaily = document.getElementById("id_input_buy_hp_daily").value;
+                
+                var cubeBuyDaily = calCubeOfHP(hpBuyDaily); //每天購買所用
+//                var needMoreCube = totalBuyCube；
+                var calTotalDay = totalDay;
+                
+                if (setFirstDayNotBuy) { //第一天不買 不計
+                    calTempDay = totalDay - 1;
+                    needMoreCube = needMoreCube - (cubeBuyDaily * calTotalDay);
+                    
+                } if (valFDBuyHP > 0 && setFirstDayNotBuy) { // 第1天有用體力
+                    calTempDay = totalDay - 1;
+                    needMoreCube = totalBuyCube - (calCubeOfHP(hpBuyDaily) * calTempDay);
+                    if (hpBuyDaily > valFDBuyHP) {
+                        needMoreCube = needMoreCube - (calCubeOfHP(hpBuyDaily) - calCubeOfHP(valFDBuyHP));
+                    }
+                } else {
+                    needMoreCube = totalBuyCube - (calCubeOfHP(hpBuyDaily) * calTempDay);
+                }
+                
+                
+                document.getElementById("id_p_result_more_cube").innerHTML = "需多用：" + needMoreCube + " 體力";  
+                
+            }
+            
+            function setResultFDVIPCheck() {
+                var checkBox = document.getElementById("id_checkbox_result_first_day_left_monthly_vip");
+                if (checkBox.checked){
+                    showFirstDayMonthlyVIP = true;
+                } else {
+                    showFirstDayMonthlyVIP = false;
+                }
+                calResult();
+            }
+            function setResultFDOclockCheck() {
+                var checkBox11 = document.getElementById("id_checkbox_result_first_day_left_oclock_11");
+                var checkBox5 = document.getElementById("id_checkbox_result_first_day_left_oclock_5");
+                if (checkBox11.checked){
+                    showFirstDayOclock11 = true;
+                } else {
+                    showFirstDayOclock11 = false;
+                }
+                if (checkBox5.checked){
+                    showFirstDayOclock5 = true;
+                } else {
+                    showFirstDayOclock5 = false;
+                }
+                calResult();
+            }
+            function setResultFDFreeHPCheck() {
+                var checkBox = document.getElementById("id_checkbox_result_first_day_left_free_hp");
+                if (checkBox.checked){
+                    showFirstDayFreeHP = true;
+                } else {
+                    showFirstDayFreeHP = false;
+                }
+                calResult();
+            }
+            function setResultFDBuyHP() {
+                valFDBuyHP = document.getElementById("id_input_resulf_first_day_left_buy_hp").value;
+                calResult();
+            }
+            function setResultFDNotBuyCheck() {
+                var checkBox = document.getElementById("id_checkbox_result_first_day_left_not_buy");
+                if (checkBox.checked){
+                    setFirstDayNotBuy = true;
+                } else {
+                    setFirstDayNotBuy = false;
+                }
+                calResult();
+            }
+            function cleanResult() {
+                document.getElementById("id_p_result_needHP").innerHTML = "";
+                document.getElementById("id_p_result_first_day_left").innerHTML = "";
+                document.getElementById("id_div_result_first_day_left").style.display = "none";
+                document.getElementById("id_p_result_middle_day").innerHTML = "";
+                document.getElementById("id_p_result_last_day_left").innerHTML = "";
+                document.getElementById("id_p_result_cube").innerHTML = "";
+                document.getElementById("id_p_result_more_cube").innerHTML = "";
+                document.getElementById("id_p_result_table").innerHTML = "";
+            }
+            function genCubeHPTable() {
+                var strTable = "平均每天還需購買計算";
+                var noRow = totalDay;
+                
+                strTable = strTable + "<br><table>";
+                strTable = strTable + "<tr><th>天</th><th>購買次數</th><th>體力</th><th>共需異方晶</th></tr>";
+                const day = [];
+                for (var i = 0; i < noRow; i++) {
+                    day[i] = 0;
+                }
+                
+                // 第 1 天不買
+                if (setFirstDayNotBuy) {
+                    var needToCalHP = calCubeBuy;
+                    var calTimes = Math.floor((needToCalHP/100)/(totalDay - 1));
+                    console.log(needToCalHP);
+                    if (calTimes >= 10) {
+                        calTimes = 10;
+                        for (var i = 1; i < noRow; i++) {
+                            day[i] = calTimes;
+                        }
+                    } else {
+                        for (var i = 1; i < noRow; i++) {
+                            day[i] = calTimes;
+                        }
+                        
+                        var indexNum = 1; // 0 - 6 = row = 7
+                        var leftHP = needToCalHP - (calTimes * (totalDay - 1) * 100);
+                        while (leftHP > 0) {
+                            day[indexNum] = day[indexNum] + 1;
+                            leftHP = leftHP - 100;
+                            indexNum++;
+                            if (indexNum == totalDay) {
+                                indexNum = 1;
+                            }
+                        }
+                    }
+                    for (var i = 0; i < totalDay; i++) {
+                        strTable = strTable + "<tr><td>" + (i+1) +"</td><td>" + day[i] + "</td><td>" + (day[i] * 100) + "</td><td>" + calCubeOfHP(day[i]) + "</td></tr>";
+                    }
+                    
+                    //全買
+                } else if (valFDBuyHP <= 0) {
+                    var needToCalHP = calCubeBuy;
+                    var calTimes = Math.floor((needToCalHP/100)/totalDay);
+                    console.log(needToCalHP);
+                    if (calTimes >= 10) {
+                        calTimes = 10;
+                        for (var i = 0; i < noRow; i++) {
+                            day[i] = calTimes;
+                        }
+                    } else {
+                        for (var i = 0; i < noRow; i++) {
+                            day[i] = calTimes;
+                        }
+                        
+                        var indexNum = 0; // 0 - 6 = row = 7
+                        var leftHP = needToCalHP - (calTimes * totalDay * 100);
+                        while (leftHP > 0) {
+                            day[indexNum] = day[indexNum] + 1;
+                            leftHP = leftHP - 100;
+                            indexNum++;
+                            if (indexNum == totalDay) {
+                                indexNum = 0;
+                            }
+                        }
+                    }
+                    for (var i = 0; i < totalDay; i++) {
+                        strTable = strTable + "<tr><td>" + (i+1) +"</td><td>" + day[i] + "</td><td>" + (day[i] * 100) + "</td><td>" + calCubeOfHP(day[i]) + "</td></tr>";
+                    }
+                    
+                    // 第一天有買
+                } else {
+                    var needToCalHP = calCubeBuy;
+                    var alreayBuy = valFDBuyHP;
+                    var indexNum = 1;
+                    var stage = 0;
+                    var leftHP = needToCalHP;
+                    while (leftHP > 0) {
+                        if (stage < alreayBuy && indexNum == 0) {
+                            
+                        } else {
+                            day[indexNum] = day[indexNum] + 1;
+                            leftHP = leftHP - 100;
+                        }
+                        indexNum++;
+                        if (indexNum == totalDay) {
+                            indexNum = 0;
+                            stage++;
+                        }
+                        if (stage > 9) {
+                            break;
+                        }
+                    }
+                    
+                    var totalFDBuyHP = day[0];
+                    for (var i = 0; i < alreayBuy; i++) {
+                        totalFDBuyHP++;
+                    }
+                    console.log(totalFDBuyHP);
+                    strTable = strTable + "<tr><td>1</td><td>" + day[0] + "</td><td>" + (day[0] * 100) + "</td><td>" + (calCubeOfHP(totalFDBuyHP) - calCubeOfHP(alreayBuy)) + "</td></tr>";
+                    
+                    for (var i = 1; i < totalDay; i++) {
+                        strTable = strTable + "<tr><td>" + (i+1) +"</td><td>" + day[i] + "</td><td>" + (day[i] * 100) + "</td><td>" + calCubeOfHP(day[i]) + "</td></tr>";
+                    }
+                }
+                
+                var totalBuyHP = 0;
+                totalBuyCube = 0;
+                
+                if (setFirstDayNotBuy) {
+                    for (var i = 1; i < totalDay; i++) {
+                        totalBuyHP = totalBuyHP + day[i];
+                        totalBuyCube = totalBuyCube + calCubeOfHP(day[i]);
+                    }
+                }
+                else if (valFDBuyHP < 1 && !setFirstDayNotBuy) {
+                    for (var i = 0; i < totalDay; i++) {
+                        totalBuyHP = totalBuyHP + day[i];
+                        totalBuyCube = totalBuyCube + calCubeOfHP(day[i]);
+                    }
+                } else {
+                    totalBuyHP = day[0];
+                    totalBuyCube = calCubeOfHP(totalFDBuyHP) - calCubeOfHP(alreayBuy);
+                    for (var i = 1; i < totalDay; i++) {
+                        totalBuyHP = totalBuyHP + day[i];
+                        totalBuyCube = totalBuyCube + calCubeOfHP(day[i]);
+                    }
+                }
+                
+                strTable = strTable + "</table><br>";
+                strTable = strTable + "一共購買：" + totalBuyHP + " 管<br>";
+                totalBuyHP = totalBuyHP * 100;
+                strTable = strTable + totalBuyHP + " 體力<br>";
+                strTable = strTable + "消耗：" + totalBuyCube + " 異方晶<br>";
+                strTable = strTable + "<br>"
+                + "（每2管為一階段，每階段需要40、80、120、200、300異方晶，每天最多可買10管）";
+                document.getElementById("id_p_result_table").innerHTML = strTable;
+            }
+        </script>
+<!--        End ======================== Script ========================-->
+    </head>
+    
+<!--    ------------------------ Body -------------------------->
+    <body>
+        
+        <h1>無期迷途</h1>
+        <h2>服從度計算器 Beta</h2>
+        <h3>只供參考</h3>
+        
+        <ol>
+            <li>
+                <div>
+                    輸入現在服從度％：
+                    <input type="number"
+                           id="id_input_present_comp"
+                           min="0"
+                           max="100"
+                           value="0"
+                           oninput="setTargetCompHP()">
+                </div>
+            </li>
+            <li>
+                <div>
+                輸入目標服從度％：
+                <input type="number"
+                       id="id_input_target_comp"
+                       min="0"
+                       max="100"
+                       value="50"
+                       oninput="setTargetCompHP()">
+                </div>
+                
+                <p id="id_p_need_comp">你大約需要：11250 體力</p>
+            </li>
+            
+            <li>
+                <div>
+                    第 1 天剩餘時間：
+                    <input type="number"
+                           id="id_input_first_day_left"
+                           min="0"
+                           max="24"
+                           value="21"
+                           oninput="setDay()">
+                     小時
+                    <input type="checkbox" 
+                           id="id_checkbox_first_day_left" 
+                           onclick="setDay()">
+                    不計算第 1 天（或輸入 0）
+                </div>
+            </li>
+            <li>
+                <div>
+                    中間有：
+                    <input type="number"
+                           id="id_input_middle_day"
+                           min="0"
+                           value="5"
+                           oninput="setDay()">
+                    天
+                    <input type="checkbox" 
+                           id="id_checkbox_middle_day"
+                           onclick="setDay()">
+                    不計算中間天數（或輸入 0）
+                </div>
+            </li>
+            <li>
+                <div>
+                    最後 1 天剩餘時間：
+                    <input type="number"
+                           id="id_input_last_day_left"
+                           min="0"
+                           max="24"
+                           value="17"
+                           oninput="setDay()">
+                    小時
+                    <input type="checkbox" 
+                           id="id_checkbox_last_day_left" 
+                           onclick="setDay()">
+                    不計算最後 1 天（或輸入 0）
+                </div>
+                
+                <p id="id_p_first_day_left"></p>
+                <p id="id_p_middle_day"></p>
+                <p id="id_p_last_day_left"></p>
+                <p id="id_p_total_day_have"></p>
+            </li>
+            
+            <li>
+                <div>
+                    有黑鑰貴賓（月卡 - 每天100體力）：
+                    <input type="checkbox" 
+                           id="id_checkbox_monthly_vip"
+                           onclick="setMonthlyVIPCheck()"
+                           checked>
+                </div>
+                
+            </li>
+            
+            <li>
+                <div>
+                    使用現有合金：
+                    <input type="checkbox" 
+                           id="id_checkbox_alloy_to_hp"
+                           onclick="setAlloyToHPCheck()">
+                    <br>（每1合金＝1分鐘，每96分鐘＝4體力，2880合金＝120體力）
+
+                    <p id="id_p_present_alloy" 
+                       style="display:none">
+                        現有合金：
+                        <input type="number" 
+                               id="id_input_alloy_to_HP" 
+                               min="0" 
+                               value="0" 
+                               oninput="setAlloyToHP()">
+                    </p>
+
+                    <p id="id_p_alloy_to_hp" 
+                       style="display:none">
+                        可轉換：0 體力
+                    </p>
+                </div>
+            </li>
+            
+            <li>
+                <div>
+                    每天使用合金轉換體力：
+                    <input type="checkbox" 
+                           id="id_checkbox_alloy_to_hp_daily" 
+                           onclick="setAlloyToHPDailyCheck()">
+                    <br>（每864秒＝4合金，每天有400合金＝16體力）
+                </div>
+                
+            </li>
+            
+            <li>
+                <div>
+                    額外體力補給：
+                    <input type="number" 
+                        id="id_input_additional_hp" 
+                        min="0" 
+                        value="0" 
+                        oninput="setAdditionalHP()">
+                    <br>（目前體力＋其他體力消耗品＋預計升級或其他會送的體力等等）
+                    <p id="id_p_additional_hp">體力補給：0 體力</p>
+                </div>
+            </li>
+        </ol>
+        
+        <button onclick="calResult()">計算！</button>
+        
+        <p id="id_p_result_needHP"></p>
+        
+        <div id="id_div_result_first_day_left"
+                 style="display:none">
+                選項（適配第 1 天特殊情況）：
+                <br>
+
+                加上月卡（如有選擇）
+                <input type="checkbox" 
+                        id="id_checkbox_result_first_day_left_monthly_vip" 
+                        onclick="setResultFDVIPCheck()">
+                <br>
+
+                加上整點體力（如剩餘時間不足以顯示整點體力，可選擇）
+                <br>
+
+                11點
+                <input type="checkbox" 
+                        id="id_checkbox_result_first_day_left_oclock_11" 
+                        onclick="setResultFDOclockCheck()"> 
+                <br>
+
+                5點
+                <input type="checkbox" 
+                        id="id_checkbox_result_first_day_left_oclock_5" 
+                        onclick="setResultFDOclockCheck()"> 
+                <br>
+                加上免費補給箱
+                <input type="checkbox" 
+                        id="id_checkbox_result_first_day_left_free_hp" 
+                        onclick="setResultFDFreeHPCheck()">
+                <br>
+            
+            
+            已購買
+            <input type="number" 
+                    id="id_input_resulf_first_day_left_buy_hp" 
+                    min="0"
+                    max="10"
+                    value="0"
+                    oninput="setResultFDBuyHP()">
+            管體力
+            <br>
+            
+                不再購買體力
+                <input type="checkbox" 
+                        id="id_checkbox_result_first_day_left_not_buy" 
+                        onclick="setResultFDNotBuyCheck()">
+             </div>
+        
+        <p id="id_p_result_first_day_left"></p>
+        
+        <p id="id_p_result_middle_day"></p>
+        <p id="id_p_result_last_day_left"></p>
+        
+        <p id="id_p_result_cube"></p>
+        
+        <p id="id_p_result_table"></p>
+        
+<!--
+        <p id="id_p_buy_hp_daily">
+            平常每天買
+            <input type="number" 
+                    id="id_input_buy_hp_daily" 
+                    min="0"
+                    max="10"
+                    value="2"
+                    oninput="setBuyHPDaily()">
+            管體力
+        </p>
+-->
+        
+        <p id="id_p_result_more_cube"></p>
+        
+        
+        
+    </body>
+<!--    // End ======================== Body ========================-->
+</html>
