@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- Meta -->
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>《無期迷途》服從度計算器 Beta v1.1</title>
+    <meta name="description" content="">
+
+    <!-- The compiled CSS file -->
+    <link rel="stylesheet" href="css/production.css">
+
+    <!-- Web fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Space+Mono:400,700" rel="stylesheet">
+
+    <!-- favicon.ico. Place these in the root directory. -->
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <!-- AD -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936468527848494" crossorigin="anonymous"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+
+    <script>
+        // 從 0 - 100 for pComp
+        $(function() {
+            var $select = $(".0-100pComp");
+            for (i = 0; i <= 100; i++) {
+                if (i == 0) {
+                    $select.append($('<option selected="selected"></option>').val(i).html(i))
+                } else {
+                    $select.append($('<option></option>').val(i).html(i))
+                }
+
+            }
+        });
+
+        // 從 0 - 100 for tComp
+        $(function() {
+            var $select = $(".0-100tComp");
+            for (i = 0; i <= 100; i++) {
+                if (i == 50) {
+                    $select.append($('<option selected="selected"></option>').val(i).html(i))
+                } else {
+                    $select.append($('<option></option>').val(i).html(i))
+                }
+
+            }
+        });
+
+        // 從 0 - 24 for fd
+        $(function() {
+            var $select = $(".0-24fd");
+            for (i = 0; i <= 24; i++) {
+                if (i == 21) {
+                    $select.append($('<option selected="selected"></option>').val(i).html(i))
+                } else {
+                    $select.append($('<option></option>').val(i).html(i))
+                }
+
+            }
+        });
+
+        // 從 0 - 24 for ld
+        $(function() {
+            var $select = $(".0-24ld");
+            for (i = 0; i <= 100; i++) {
+                if (i == 17) {
+                    $select.append($('<option selected="selected"></option>').val(i).html(i))
+                } else {
+                    $select.append($('<option></option>').val(i).html(i))
+                }
+            }
+        });
+
+        // 從 0 - 10 for buy
+        $(function() {
+            var $select = $(".0-10buy");
+            for (i = 0; i <= 10; i++) {
+                if (i == 0) {
+                    $select.append($('<option selected="selected"></option>').val(i).html(i))
+                } else {
+                    $select.append($('<option></option>').val(i).html(i))
+                }
+            }
+        });
+
+    </script>
+
+    <!-- My Code -->
+    <script src="js/ptn_value.js"></script>
+
+    <!-- Default Value -->
+    <script>
+        var canCal = true; // 可以計算
+        var dNeedHP = 11250; // 0% - 50%
+        var dNM = 0;
+        var dEarn = 0;
+        var dBuyHP = 0;
+
+        var calFD = true;
+        var calMD = true;
+        var calLD = true;
+        var dFD = 0;
+        var dMD = 0;
+        var dLD = 0;
+        var dTotalD = 7;
+
+        var dTotalFD = 21;
+        var dTotalMD = 5;
+        var dTotalLD = 17;
+
+        var dTotalMDAll = 0;
+
+        var useAlloy = false;
+        var dAlloy = 0;
+
+        var useHave = false;
+        var dHave = 0;
+
+        var dFDBuy = 0;
+        var dFDNotBuy = false;
+
+    </script>
+    <!-- Function -->
+    <script>
+        function hide() {
+            var table1 = document.getElementById("id_tb_cal1");
+            table1.style.display = "none";
+            document.getElementById("id_p_DNM").innerHTML = "";
+            var div1 = document.getElementById("id_div_suggest");
+            div1.style.display = "none";
+        }
+
+        function setNeedHP() {
+            hide();
+
+            var pComp = document.getElementById("id_sel_pComp").value;
+            var tComp = document.getElementById("id_sel_tComp").value;
+            setPNeedHP("");
+            dNeedHP = getHPNeedByComp(tComp) - getHPNeedByComp(pComp);
+            if (dNeedHP < 0) {
+                setPNeedHP("<strong>好感度輸入錯誤（請輸入 0～100 之間的數值）</strong>");
+                dNeedHP = 0;
+                canCal = false;
+            } else {
+                setPNeedHP("<strong>你大約需要：" + dNeedHP + " 體力</strong>");
+                canCal = true;
+            }
+        }
+
+        function setPNeedHP(str) {
+            document.getElementById("id_p_nHP").innerHTML = str;
+        }
+
+        function setDayCB() {
+            hide();
+
+            dFD = document.getElementById("id_input_fd").value;
+            dLD = document.getElementById("id_input_ld").value;
+
+            var fd11 = cal11FD(dFD);
+            if (fd11) {
+                document.getElementById("id_cb_fd_n3cb").checked = true;
+            } else {
+                document.getElementById("id_cb_fd_n3cb").checked = false;
+            }
+
+            document.getElementById("id_cb_md_n3cb").checked = true;
+
+            var ld11 = cal11LD(dLD);
+            if (ld11) {
+                document.getElementById("id_cb_ld_n3cb").checked = true;
+            } else {
+                document.getElementById("id_cb_ld_n3cb").checked = false;
+            }
+
+            var fd5 = cal5FD(dFD);
+            if (fd5) {
+                document.getElementById("id_cb_fd_n4cb").checked = true;
+            } else {
+                document.getElementById("id_cb_fd_n4cb").checked = false;
+            }
+
+            document.getElementById("id_cb_md_n4cb").checked = true;
+
+            var ld5 = cal5LD(dLD);
+            if (ld5) {
+                document.getElementById("id_cb_ld_n4cb").checked = true;
+            } else {
+                document.getElementById("id_cb_ld_n4cb").checked = false;
+            }
+
+            setDay();
+        }
+
+        function setDay() {
+            calFD = true;
+            calMD = true;
+            calLD = true;
+            canCal = true;
+
+            dFD = document.getElementById("id_input_fd").value;
+            dMD = document.getElementById("id_input_md").value;
+            dLD = document.getElementById("id_input_ld").value;
+
+            var cbFD = document.getElementById("id_cb_fd");
+            var cbMD = document.getElementById("id_cb_md");
+            var cbLD = document.getElementById("id_cb_ld");
+
+            if (cbFD.checked || dFD == 0) {
+                calFD = false;
+            }
+            if (cbMD.checked || dMD == 0) {
+                calMD = false;
+            }
+            if (cbLD.checked || dLD == 0) {
+                calLD = false;
+            }
+
+            if (canCal && calFD && (dFD < 0 || dFD > 24)) {
+                calFD = false;
+                canCal = false;
+                setPDay("第 1 天時間輸入錯誤（請輸入 0～24 之間的數值 或 選擇不計算）");
+
+            }
+            if (canCal && calMD && dMD < 0) {
+                calMD = false;
+                canCal = false;
+                setPDay("中間天數輸入錯誤（請輸入 0 或以上的數值 或 選擇不計算）");
+            }
+            if (canCal && calLD && dLD < 0) {
+                calLD = false;
+                canCal = false;
+                setPDay("最後 1 天時間輸入錯誤（請輸入 0 或以上的數值 或 選擇不計算）");
+            }
+            if (canCal) {
+                dTotalD = 0;
+                var str = "";
+                if (calFD) {
+                    dTotalD++;
+                    str = str + "第 1 天還剩下：" + dFD + " 小時";
+                }
+                if (calMD) {
+                    for (var i = 0; i < dMD; i++) {
+                        dTotalD++;
+                    }
+                    if (calFD) {
+                        str = str + "<br>";
+                    }
+                    str = str + "中間還有：" + dMD + " 天";
+                }
+                if (calLD) {
+                    dTotalD++;
+                    if (calFD || calMD) {
+                        str = str + "<br>";
+                    }
+                    str = str + "最後 1 天到：" + dLD + " 小時";
+                }
+                if (calFD || calMD || calLD) {
+                    str = str + "<br>";
+                }
+                str = str + "共有：" + dTotalD + " 天";
+                setPDay(str);
+            }
+        }
+
+        function setPDay(str) {
+            document.getElementById("id_p_day").innerHTML = "<strong>" + str + "</strong>";
+
+        }
+
+        function setAlloy() {
+            hide();
+
+            dAlloy = 0;
+
+            var cb = document.getElementById("id_cb_alloy");
+            if (cb.checked) {
+                document.getElementById("id_input_alloy").disabled = false;
+                var alloy = document.getElementById("id_input_alloy").value;
+                console.log(alloy);
+                if (alloy < 0) {
+                    document.getElementById("id_p_alloy").innerHTML = "合金數量輸入錯誤，不使用合金";
+                    dAlloy = 0;
+                    useAlloy = false;
+                } else {
+                    alloy = Math.floor(alloy / 96);
+                    alloy = alloy * 4;
+                    document.getElementById("id_p_alloy").innerHTML = "<strong>" + alloy + " 體力</strong>";
+                    dAlloy = alloy;
+                    useAlloy = true;
+                }
+            } else {
+                document.getElementById("id_input_alloy").disabled = true;
+                document.getElementById("id_p_alloy").innerHTML = " - 體力";
+                useAlloy = false;
+            }
+        }
+
+        function setHave() {
+            hide();
+
+            dHave = 0;
+
+            var cb = document.getElementById("id_cb_have");
+            if (cb.checked) {
+                document.getElementById("id_input_have").disabled = false;
+                var have = document.getElementById("id_input_have").value;
+                console.log(have);
+                if (have < 0) {
+                    document.getElementById("id_p_have").innerHTML = "體力輸入錯誤，不使用額外補給";
+                    dHave = 0;
+                    useHave = false;
+                } else {
+                    if (have == "") {
+                        have = 0;
+                    }
+                    document.getElementById("id_p_have").innerHTML = "<strong>" + have + " 體力</strong>";
+                    dHave = have;
+                    useHave = true;
+                }
+            } else {
+                document.getElementById("id_input_have").disabled = true;
+                document.getElementById("id_p_have").innerHTML = " - 體力";
+                useHave = false;
+            }
+        }
+
+
+        function cal() {
+            setNeedHP();
+            setDay();
+            var table1 = document.getElementById("id_tb_cal1");
+            if (canCal) {
+                document.getElementById("id_p_DError").innerHTML = "";
+                dNM = dNeedHP;
+
+                if (useAlloy) {
+                    dNM = dNM - dAlloy;
+                }
+                if (useHave) {
+                    dNM = dNM - dHave;
+                }
+                document.getElementById("id_p_DNM").innerHTML = "<strong>你大約還需要：" + dNM + " 體力</strong>";
+
+                table1.style.display = "table";
+                if (calFD) {
+                    dTotalFD = 0;
+
+                    // fd time
+                    document.getElementById("id_th_fd").innerHTML = "剩餘 " + dFD + " 小時";
+                    // 自然回復
+                    document.getElementById("id_cb_fd_n1cb").disabled = false;
+                    var n1cb = document.getElementById("id_cb_fd_n1cb");
+                    if (n1cb.checked) {
+                        document.getElementById("id_th_fd_n1").innerHTML = calDRecover(dFD);
+                        dTotalFD = dTotalFD + calDRecover(dFD);
+                    } else {
+                        document.getElementById("id_th_fd_n1").innerHTML = " - ";
+                    }
+                    // 建設
+                    document.getElementById("id_cb_fd_n2cb").disabled = false;
+                    var n2cb = document.getElementById("id_cb_fd_n2cb");
+                    if (n2cb.checked) {
+                        document.getElementById("id_th_fd_n2").innerHTML = calDEarn(dFD);
+                        dTotalFD = dTotalFD + calDEarn(dFD);
+                    } else {
+                        document.getElementById("id_th_fd_n2").innerHTML = " - ";
+                    }
+                    // 11點
+                    document.getElementById("id_cb_fd_n3cb").disabled = false;
+                    var n3cb = document.getElementById("id_cb_fd_n3cb");
+                    if (n3cb.checked) {
+                        document.getElementById("id_th_fd_n3").innerHTML = 60;
+                        dTotalFD = dTotalFD + 60;
+                    } else {
+                        document.getElementById("id_th_fd_n3").innerHTML = " - ";
+                    }
+                    // 5點
+                    document.getElementById("id_cb_fd_n4cb").disabled = false;
+                    var n4cb = document.getElementById("id_cb_fd_n4cb");
+                    if (n4cb.checked) {
+                        document.getElementById("id_th_fd_n4").innerHTML = 60;
+                        dTotalFD = dTotalFD + 60;
+                    } else {
+                        document.getElementById("id_th_fd_n4").innerHTML = " - ";
+                    }
+                    // Free 20
+                    document.getElementById("id_cb_fd_n5cb").disabled = false;
+                    var n5cb = document.getElementById("id_cb_fd_n5cb");
+                    if (n5cb.checked) {
+                        document.getElementById("id_th_fd_n5").innerHTML = 20;
+                        dTotalFD = dTotalFD + 20;
+                    } else {
+                        document.getElementById("id_th_fd_n5").innerHTML = " - ";
+                    }
+                    // VIP
+                    document.getElementById("id_cb_fd_n6cb").disabled = false;
+                    var n6cb = document.getElementById("id_cb_fd_n6cb");
+                    if (n6cb.checked) {
+                        document.getElementById("id_th_fd_n6").innerHTML = 100;
+                        dTotalFD = dTotalFD + 100;
+                    } else {
+                        document.getElementById("id_th_fd_n6").innerHTML = " - ";
+                    }
+                    // Alloy
+                    document.getElementById("id_cb_fd_n7cb").disabled = false;
+                    var n7cb = document.getElementById("id_cb_fd_n7cb");
+                    if (n7cb.checked) {
+                        document.getElementById("id_th_fd_n7").innerHTML = calAlloy(dFD);
+                        dTotalFD = dTotalFD + calAlloy(dFD);
+                    } else {
+                        document.getElementById("id_th_fd_n7").innerHTML = " - ";
+                    }
+
+                    document.getElementById("id_th_md_t1").innerHTML = dTotalMD;
+                    document.getElementById("id_th_md_t2").innerHTML = dTotalMD * dMD;
+
+                    // 總結
+                    document.getElementById("id_th_fd_t").innerHTML = "共 " + dTotalFD + " 體力";
+                } else {
+                    // fd time
+                    document.getElementById("id_th_fd").innerHTML = " - ";
+                    document.getElementById("id_cb_fd_n1cb").disabled = true;
+                    document.getElementById("id_th_fd_n1").innerHTML = " - ";
+                    document.getElementById("id_cb_fd_n2cb").disabled = true;
+                    document.getElementById("id_th_fd_n2").innerHTML = " - ";
+                    document.getElementById("id_cb_fd_n3cb").disabled = true;
+                    document.getElementById("id_th_fd_n3").innerHTML = " - ";
+                    document.getElementById("id_cb_fd_n4cb").disabled = true;
+                    document.getElementById("id_th_fd_n4").innerHTML = " - ";
+                    document.getElementById("id_cb_fd_n5cb").disabled = true;
+                    document.getElementById("id_th_fd_n5").innerHTML = " - ";
+                    document.getElementById("id_cb_fd_n6cb").disabled = true;
+                    document.getElementById("id_th_fd_n6").innerHTML = " - ";
+                    document.getElementById("id_cb_fd_n7cb").disabled = true;
+                    document.getElementById("id_th_fd_n7").innerHTML = " - ";
+
+
+                    document.getElementById("id_th_fd_t").innerHTML = " - ";
+                }
+
+                if (calMD) {
+                    dTotalMD = 0;
+
+
+                    // md time
+                    document.getElementById("id_th_md").innerHTML = "共 " + dMD + " 天";
+
+                    // 自然回復
+                    document.getElementById("id_cb_md_n1cb").disabled = false;
+                    var n1cb = document.getElementById("id_cb_md_n1cb");
+                    if (n1cb.checked) {
+                        document.getElementById("id_th_md_n1").innerHTML = calDRecover(24);
+                        dTotalMD = dTotalMD + 240;
+                    } else {
+                        document.getElementById("id_th_md_n1").innerHTML = " - ";
+                    }
+                    // 建設
+                    document.getElementById("id_cb_md_n2cb").disabled = false;
+                    var n2cb = document.getElementById("id_cb_md_n2cb");
+                    if (n2cb.checked) {
+                        document.getElementById("id_th_md_n2").innerHTML = 60;
+                        dTotalMD = dTotalMD + 60;
+                    } else {
+                        document.getElementById("id_th_md_n2").innerHTML = " - ";
+                    }
+                    // 11點
+                    document.getElementById("id_cb_md_n3cb").disabled = false;
+                    var n3cb = document.getElementById("id_cb_md_n3cb");
+                    if (n3cb.checked) {
+                        document.getElementById("id_th_md_n3").innerHTML = 60;
+                        dTotalMD = dTotalMD + 60;
+                    } else {
+                        document.getElementById("id_th_md_n3").innerHTML = " - ";
+                    }
+                    // 5點
+                    document.getElementById("id_cb_md_n4cb").disabled = false;
+                    var n4cb = document.getElementById("id_cb_md_n4cb");
+                    if (n4cb.checked) {
+                        document.getElementById("id_th_md_n4").innerHTML = 60;
+                        dTotalMD = dTotalMD + 60;
+                    } else {
+                        document.getElementById("id_th_md_n4").innerHTML = " - ";
+                    }
+                    // Free 20
+                    document.getElementById("id_cb_md_n5cb").disabled = false;
+                    var n5cb = document.getElementById("id_cb_md_n5cb");
+                    if (n5cb.checked) {
+                        document.getElementById("id_th_md_n5").innerHTML = 20;
+                        dTotalMD = dTotalMD + 20;
+                    } else {
+                        document.getElementById("id_th_md_n5").innerHTML = " - ";
+                    }
+                    // VIP
+                    document.getElementById("id_cb_md_n6cb").disabled = false;
+                    var n6cb = document.getElementById("id_cb_md_n6cb");
+                    if (n6cb.checked) {
+                        document.getElementById("id_th_md_n6").innerHTML = 100;
+                        dTotalMD = dTotalMD + 100;
+                    } else {
+                        document.getElementById("id_th_md_n6").innerHTML = " - ";
+                    }
+                    // Alloy
+                    document.getElementById("id_cb_md_n7cb").disabled = false;
+                    var n7cb = document.getElementById("id_cb_md_n7cb");
+                    if (n7cb.checked) {
+                        document.getElementById("id_th_md_n7").innerHTML = calAlloy(24);
+                        dTotalMD = dTotalMD + calAlloy(24);
+                    } else {
+                        document.getElementById("id_th_md_n7").innerHTML = " - ";
+                    }
+
+                    document.getElementById("id_th_md_t1").innerHTML = "共 " + dTotalMD + " 體力";
+                    document.getElementById("id_th_md_t2").innerHTML = dMD + "天 共 " + dTotalMD * dMD + " 體力";
+                    dTotalMDAll = dTotalMD * dMD;
+                } else {
+                    // md time
+                    document.getElementById("id_th_md").innerHTML = " - ";
+                    document.getElementById("id_cb_md_n1cb").disabled = true;
+                    document.getElementById("id_th_md_n1").innerHTML = " - ";
+                    document.getElementById("id_cb_md_n2cb").disabled = true;
+                    document.getElementById("id_th_md_n2").innerHTML = " - ";
+                    document.getElementById("id_cb_md_n3cb").disabled = true;
+                    document.getElementById("id_th_md_n3").innerHTML = " - ";
+                    document.getElementById("id_cb_md_n4cb").disabled = true;
+                    document.getElementById("id_th_md_n4").innerHTML = " - ";
+                    document.getElementById("id_cb_md_n5cb").disabled = true;
+                    document.getElementById("id_th_md_n5").innerHTML = " - ";
+                    document.getElementById("id_cb_md_n6cb").disabled = true;
+                    document.getElementById("id_th_md_n6").innerHTML = " - ";
+                    document.getElementById("id_cb_md_n7cb").disabled = true;
+                    document.getElementById("id_th_md_n7").innerHTML = " - ";
+
+
+
+                    document.getElementById("id_th_md_t1").innerHTML = " - ";
+                    document.getElementById("id_th_md_t2").innerHTML = " - ";
+                }
+
+                if (calLD) {
+                    dTotalLD = 0;
+
+                    // ld time
+                    document.getElementById("id_th_ld").innerHTML = "到 " + dLD + " 小時";
+                    document.getElementById("id_cb_ld_n1cb").disabled = false;
+                    var n1cb = document.getElementById("id_cb_ld_n1cb");
+                    if (n1cb.checked) {
+                        document.getElementById("id_th_ld_n1").innerHTML = calDRecover(dLD);
+                        dTotalLD = dTotalLD + calDRecover(dLD);
+                    } else {
+                        document.getElementById("id_th_ld_n1").innerHTML = " - ";
+                    }
+                    // 建設
+                    document.getElementById("id_cb_ld_n2cb").disabled = false;
+                    var n2cb = document.getElementById("id_cb_ld_n2cb");
+                    if (n2cb.checked) {
+                        document.getElementById("id_th_ld_n2").innerHTML = calDEarn(dLD);
+                        dTotalLD = dTotalLD + calDEarn(dLD);
+                    } else {
+                        document.getElementById("id_th_ld_n2").innerHTML = " - ";
+                    }
+                    // 11點
+                    document.getElementById("id_cb_ld_n3cb").disabled = false;
+                    var n3cb = document.getElementById("id_cb_ld_n3cb");
+                    if (n3cb.checked) {
+                        document.getElementById("id_th_ld_n3").innerHTML = 60;
+                        dTotalLD = dTotalLD + 60;
+                    } else {
+                        document.getElementById("id_th_ld_n3").innerHTML = " - ";
+
+                    }
+                    // 5點
+                    document.getElementById("id_cb_ld_n4cb").disabled = false;
+                    var n4cb = document.getElementById("id_cb_ld_n4cb");
+                    if (n4cb.checked) {
+                        document.getElementById("id_th_ld_n4").innerHTML = 60;
+                        dTotalLD = dTotalLD + 60;
+                    } else {
+                        document.getElementById("id_th_ld_n4").innerHTML = " - ";
+
+                    }
+                    // Free 20
+                    document.getElementById("id_cb_ld_n5cb").disabled = false;
+                    var n5cb = document.getElementById("id_cb_ld_n5cb");
+                    if (n5cb.checked) {
+                        document.getElementById("id_th_ld_n5").innerHTML = 20;
+                        dTotalLD = dTotalLD + 20;
+                    } else {
+                        document.getElementById("id_th_ld_n5").innerHTML = " - ";
+
+                    }
+                    // VIP
+                    document.getElementById("id_cb_ld_n6cb").disabled = false;
+                    var n6cb = document.getElementById("id_cb_ld_n6cb");
+                    if (n6cb.checked) {
+                        document.getElementById("id_th_ld_n6").innerHTML = 100;
+                        dTotalLD = dTotalLD + 100;
+                    } else {
+                        document.getElementById("id_th_ld_n6").innerHTML = " - ";
+
+                    }
+                    // Alloy
+                    document.getElementById("id_cb_ld_n7cb").disabled = false;
+                    var n7cb = document.getElementById("id_cb_ld_n7cb");
+                    if (n7cb.checked) {
+                        document.getElementById("id_th_ld_n7").innerHTML = calAlloy(dLD);
+                        dTotalLD = dTotalLD + calAlloy(dLD);
+                    } else {
+                        document.getElementById("id_th_ld_n7").innerHTML = " - ";
+                    }
+
+                    document.getElementById("id_th_ld_t").innerHTML = "共 " + dTotalLD + " 體力";
+                } else {
+                    // ld time
+                    document.getElementById("id_th_ld").innerHTML = " - ";
+                    document.getElementById("id_cb_ld_n1cb").disabled = true;
+                    document.getElementById("id_th_ld_n1").innerHTML = " - ";
+                    document.getElementById("id_cb_ld_n2cb").disabled = true;
+                    document.getElementById("id_th_ld_n2").innerHTML = " - ";
+                    document.getElementById("id_cb_ld_n3cb").disabled = true;
+                    document.getElementById("id_th_ld_n3").innerHTML = " - ";
+                    document.getElementById("id_cb_ld_n4cb").disabled = true;
+                    document.getElementById("id_th_ld_n4").innerHTML = " - ";
+                    document.getElementById("id_cb_ld_n5cb").disabled = true;
+                    document.getElementById("id_th_ld_n5").innerHTML = " - ";
+                    document.getElementById("id_cb_ld_n6cb").disabled = true;
+                    document.getElementById("id_th_ld_n6").innerHTML = " - ";
+                    document.getElementById("id_cb_ld_n7cb").disabled = true;
+                    document.getElementById("id_th_ld_n7").innerHTML = " - ";
+
+
+                    document.getElementById("id_th_ld_t").innerHTML = " - ";
+                }
+
+                dEarn = 0;
+                if (calFD) {
+                    dEarn = dEarn + dTotalFD;
+                }
+                if (calMD) {
+                    dEarn = dEarn + (dTotalMD * dMD);
+                }
+                if (calLD) {
+                    dEarn = dEarn + dTotalLD;
+                }
+                document.getElementById("id_th_t1").innerHTML = "你共可獲得：" + dEarn + " 體力"
+
+                dBuyHP = dNM - dEarn;
+                if (dBuyHP <= 0) {
+                    dBuyHP = 0;
+                }
+                document.getElementById("id_th_t2").innerHTML = "你還需要購買：" + dBuyHP + " 體力"
+
+                calSuggest();
+            } else {
+                document.getElementById("id_p_DError").innerHTML = "<strong>錯誤數值，請重新檢查！</strong>";
+                table1.style.display = "none";
+            }
+        }
+
+        function calDRecover(value) {
+            return value * 10;
+        }
+
+        function calDEarn(value) {
+            return Math.floor(value * 60 / 96) * 4;
+        }
+
+        function cal11FD(value) {
+            if (value >= 13) return true;
+            else return false;
+        }
+
+        function cal11LD(value) {
+            if (value >= 11) return true;
+            else return false;
+        }
+
+        function cal5FD(value) {
+            if (value >= 7) return true;
+            else return false;
+        }
+
+        function cal5LD(value) {
+            if (value >= 17) return true;
+            else return false;
+        }
+
+        function calAlloy(value) {
+            return Math.floor(Math.floor(value * 60 * 60 / 864) * 4 / 96) * 4;
+        }
+
+        function calSuggest() {
+            if (dTotalD > 0 && dBuyHP > 0) {
+                var div1 = document.getElementById("id_div_suggest");
+                div1.style.display = "grid";
+
+                var table = document.getElementById("id_p_suggest_table");
+
+                dFDBuy = 0;
+
+                dFDBuy = document.getElementById("id_sel_buy").value;
+                var cb = document.getElementById("id_cb_buy");
+
+                dFDNotBuy = false;
+                if (cb.checked) {
+                    dFDNotBuy = true;
+                } else {
+                    dFDNotBuy = false;
+                }
+
+
+                var str = "";
+                str = str +
+                    "<table class='custable pl1 pr1'>" +
+                    "<tr><th>天</th><th class='custdleft'>購買次數</th><th class='custdleft'>體力</th><th class='custdleft'>共需異方晶</th></tr>";
+
+                const day = [];
+
+                for (var i = 0; i < dTotalD; i++) {
+                    day[i] = 0;
+                    console.log(day[i]);
+                }
+
+                var stage = 0;
+                var calBuyHP = dBuyHP;
+
+                var indexNum = 0;
+                while (calBuyHP > 0) {
+                    if (stage < dFDBuy && indexNum == 0) {} else if (dFDNotBuy && indexNum == 0) {} else {
+                        day[indexNum] = day[indexNum] + 1;
+                        calBuyHP = calBuyHP - 100;
+                    }
+
+                    indexNum++;
+                    if (indexNum == dTotalD) {
+                        indexNum = 0;
+                        stage++;
+                    }
+                    if (stage > 9) {
+                        break;
+                    }
+                }
+
+                var totalBuyTimes = 0;
+                var totalBuyHP = 0;
+                var totalNeedCube = 0;
+
+                if (dFDBuy > 0) {
+                    var FDBuy = 0;
+                    FDBuy = day[0];
+                    for (var i = 0; i < dFDBuy; i++) {
+                        FDBuy++;
+                    }
+                    
+                    str = str + "<tr><th class='custd'>" + 1 + "</th><td class='custd custdleft'>" + day[0] + "</td><td class='custd custdleft'>" + (day[0] * 100) + "</td><td class='custd custdleft'>" + (calCubeOfHP(FDBuy) - calCubeOfHP(dFDBuy)) + "</td></tr>";
+
+                    totalBuyTimes = totalBuyTimes + day[0];
+                    totalBuyHP = totalBuyHP + (day[0] * 100);
+                    totalNeedCube = totalNeedCube + (calCubeOfHP(FDBuy) - calCubeOfHP(dFDBuy));
+                    
+                    
+                    for (var i = 1; i < dTotalD; i++) {
+                        str = str + "<tr><th class='custd'>" + (i + 1) + "</th><td class='custd custdleft'>" + day[i] + "</td><td class='custd custdleft'>" + (day[i] * 100) + "</td><td class='custd custdleft'>" + calCubeOfHP(day[i]) + "</td></tr>";
+                        totalBuyTimes = totalBuyTimes + day[i];
+                        totalBuyHP = totalBuyHP + (day[i] * 100);
+                        totalNeedCube = totalNeedCube + calCubeOfHP(day[i]);
+                    }
+                } else if (dFDNotBuy) {
+                    str = str + "<tr><th class='custd'>1</th><td class='custd custdleft'>0</td><td class='custd custdleft'>0</td><td class='custd custdleft'>0</td></tr>";
+                    
+                    for (var i = 1; i < dTotalD; i++) {
+                        str = str + "<tr><th class='custd'>" + (i + 1) + "</th><td class='custd custdleft'>" + day[i] + "</td><td class='custd custdleft'>" + (day[i] * 100) + "</td><td class='custd custdleft'>" + calCubeOfHP(day[i]) + "</td></tr>";
+                        totalBuyTimes = totalBuyTimes + day[i];
+                        totalBuyHP = totalBuyHP + (day[i] * 100);
+                        totalNeedCube = totalNeedCube + calCubeOfHP(day[i]);
+                    }
+                }else {
+                    for (var i = 0; i < dTotalD; i++) {
+                        str = str + "<tr><th class='custd'>" + (i + 1) + "</th><td class='custd custdleft'>" + day[i] + "</td><td class='custd custdleft'>" + (day[i] * 100) + "</td><td class='custd custdleft'>" + calCubeOfHP(day[i]) + "</td></tr>";
+                        totalBuyTimes = totalBuyTimes + day[i];
+                        totalBuyHP = totalBuyHP + (day[i] * 100);
+                        totalNeedCube = totalNeedCube + calCubeOfHP(day[i]);
+                    }
+                }
+
+
+                str = str +
+                    "<tr><th class='custd' style='text-align:center'>共</th><th class='custd custdleft' style='text-align:center'>" + totalBuyTimes + "</th><th class='custd custdleft'  style='text-align:center'>" + totalBuyHP + "</th><th class='custd custdleft'  style='text-align:center'>" + totalNeedCube + "</th></tr>";
+
+                if (calBuyHP > 0) {
+                    str = str +
+                        "<tr><th class='custd' colspan='4' style='text-align:center''>還需要 " + calBuyHP + " 體力</th></tr>";
+                }
+
+                str = str +
+                    "<tr><th class='custd' colspan='4' style='text-align:center''>（每2管為一階段，每階段需要40、80、120、200、300異方晶，每天最多可買10管）</th></tr>";
+
+                str = str +
+                    "</table>";
+
+                document.getElementById("id_p_suggest_table").innerHTML = str;
+            }
+
+        }
+
+        function test() {
+            console.log("Output");
+        }
+
+    </script>
+
+</head>
+
+<body class="has-animations">
+
+    <!-- Create outer border -->
+    <div class="page-border">
+        <div class="bg--white">
+
+            <!-- Header -->
+            <header class="align--center">
+                <h1 class="mb3 reveal-on-scroll is-revealing" title="《無期迷途》">
+                    <img src="img/IMG_0256.PNG" alt="無期迷途">
+                </h1>
+                <h2 class="mb1 reveal-on-scroll is-revealing">
+                    服從度計算器
+                </h2>
+                <p class="mb1 reveal-on-scroll is-revealing"><strong>Beta v1.2 僅供參考</strong></p>
+            </header>
+
+            <main class="align--center">
+                <div class="reveal-on-scroll is-revealing pl1 pr1">
+                    <!-- My Code: Cal HP -->
+                    <section>
+                        <div class="grid-row">
+                            <div class="grid-column span-whole mt1 reveal-on-scroll is-revealing">
+                                現在服從度：
+                                <select id="id_sel_pComp" class="0-100pComp" onchange="setNeedHP()"></select>％
+                            </div>
+
+                            <div class="grid-column span-whole mt1 reveal-on-scroll is-revealing">
+                                目標服從度：
+                                <select id="id_sel_tComp" class="0-100tComp" onchange="setNeedHP()"></select>％
+                            </div>
+
+                            <div class="grid-column span-whole mt1 reveal-on-scroll is-revealing">
+                                <p id="id_p_nHP">
+                                    <strong>
+                                        你大約需要：11250 體力
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- My Code: Cal Time -->
+                    <section>
+                        <div class="mt2 reveal-on-scroll is-revealing">
+                            <table class="custable pl1 pr1">
+                                <tr>
+                                    <th style="text-align:left">日期</th>
+                                    <th style="text-align:center" class="custdleft">時間</th>
+                                    <th style="text-align:center" class="custdleft">不計算 （或輸入 0）</th>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:left" class="custd">
+                                        第 1 天剩餘：
+                                    </td>
+                                    <td class="custd custdleft">
+                                        <input type="number" id="id_input_fd" min="0" max="24" value="21" oninput="setDayCB()" style="width:30%"> 小時
+                                    </td>
+                                    <td class="custd custdleft">
+                                        <input type="checkbox" id="id_cb_fd" onclick="setDayCB()">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:left" class="custd">
+                                        中間有：
+                                    </td>
+                                    <td class="custd custdleft">
+                                        <input type="number" id="id_input_md" min="0" value="5" oninput="setDayCB()" style="width:40%"> 天
+                                    </td>
+                                    <td class="custd custdleft">
+                                        <input type="checkbox" id="id_cb_md" onclick="setDayCB()">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:left" class="custd">
+                                        最後 1 天還有：
+                                    </td>
+                                    <td class="custd custdleft">
+                                        <input type="number" id="id_input_ld" min="0" max="24" value="17" oninput="setDayCB()" style="width:30%"> 小時
+                                    </td>
+                                    <td class="custd custdleft">
+                                        <input type="checkbox" id="id_cb_ld" onclick="setDayCB()">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="custd" colspan="3">
+                                        <p id="id_p_day">
+                                            <strong>
+                                                第 1 天還剩下：21 小時
+                                                <br>
+                                                中間還有：5 天
+                                                <br>
+                                                最後 1 天到：17 小時
+                                                <br>
+                                                共有：7 天
+                                            </strong>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="custd" colspan="3">
+                                        <p id="id_p_day">
+                                            <strong>
+                                                （ 1 天的計算由 00:00 到 23:59）
+                                            </strong>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="custd">
+                                        轉換合金
+                                        <input type="checkbox" id="id_cb_alloy" onclick="setAlloy()">
+                                    </th>
+                                    <td class="custd custdleft">
+                                        <input type="input" id="id_input_alloy" style="width:60%" oninput="setAlloy()" disabled="true">
+                                    </td>
+                                    <th class="custd custdleft" style="text-align:center">
+                                        <p id="id_p_alloy">
+                                            <strong>
+                                                - 體力
+                                            </strong>
+                                        </p>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td class="custd" colspan="3">
+                                        <p id="id_p_day">
+                                            <strong>
+                                                （每1合金＝1分鐘，每96分鐘＝4體力，2880合金＝120體力）
+                                                <br>
+                                                （每864秒＝4合金，每天有400合金＝16體力）
+                                            </strong>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="custd">
+                                        額外體力補給
+                                        <input type="checkbox" id="id_cb_have" onclick="setHave()">
+                                    </th>
+                                    <td class="custd custdleft">
+                                        <input type="input" id="id_input_have" style="width:60%" oninput="setHave()" disabled="true">
+                                    </td>
+                                    <th class="custd custdleft" style="text-align:center">
+                                        <p id="id_p_have">
+                                            <strong>
+                                                - 體力
+                                            </strong>
+                                        </p>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td class="custd" colspan="3">
+                                        <p id="id_p_day">
+                                            <strong>
+                                                （目前體力＋其他體力消耗品＋預計升級或其他會送的體力等等）
+                                            </strong>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- My Code: Cal Button -->
+                    <section class="align--center pt1 pb1">
+                        <a class="btn btn--default reveal-on-scroll is-revealing pl1 pr1" onclick="cal()">計算 →</a>
+                    </section>
+
+                    <!-- My Code: Cal Table -->
+
+                    <section>
+                        <div class="mt2 reveal-on-scroll is-revealing">
+                            <p class="mb1 reveal-on-scroll is-revealing" id="id_p_DError" style="color: red"></p>
+
+                            <p class="mb1 reveal-on-scroll is-revealing" id="id_p_DNM"></p>
+                            <table id="id_tb_cal1" style="display: none" class="custable pl1 pr1">
+
+                                <tr>
+                                    <th style="text-align:left">項目</th>
+                                    <th style="text-align:center" colspan="2" class="custdleft">第 1 天</th>
+                                    <th style="text-align:center" colspan="2" class="custdleft">中間</th>
+                                    <th style="text-align:center" colspan="2" class="custdleft">最後 1 天</th>
+                                </tr>
+
+                                <tr>
+                                    <th style="text-align:left" class="custd"> - </th>
+                                    <th style="text-align:center" class="custd custdleft" id="id_th_fd" colspan="2">剩餘 - 小時</th>
+                                    <th style="text-align:center" class="custd custdleft" id="id_th_md" colspan="2">共 - 天</th>
+                                    <th style="text-align:center" class="custd custdleft" id="id_th_ld" colspan="2">到 - 小時</th>
+                                </tr>
+
+                                <tr>
+                                    <th style="text-align:left" class="custd">自然回復</th>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_fd_n1"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_fd_n1cb" onclick="cal()" checked="checked">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_md_n1"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_md_n1cb" onclick="cal()" checked="checked">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_ld_n1"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_ld_n1cb" onclick="cal()" checked="checked">
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th style="text-align:left" class="custd">建設</th>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_fd_n2"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_fd_n2cb" onclick="cal()" checked="checked">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_md_n2"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_md_n2cb" onclick="cal()" checked="checked">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_ld_n2"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_ld_n2cb" onclick="cal()" checked="checked">
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th style="text-align:left" class="custd">11點</th>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_fd_n3"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_fd_n3cb" onclick="cal()" checked="checked">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_md_n3"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_md_n3cb" onclick="cal()" checked="checked">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_ld_n3"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_ld_n3cb" onclick="cal()" checked="checked">
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th style="text-align:left" class="custd">5點</th>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_fd_n4"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_fd_n4cb" onclick="cal()" checked="checked">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_md_n4"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_md_n4cb" onclick="cal()" checked="checked">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_ld_n4"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_ld_n4cb" onclick="cal()" checked="checked">
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th style="text-align:left" class="custd">免費補給箱</th>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_fd_n5"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_fd_n5cb" onclick="cal()" checked="checked">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_md_n5"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_md_n5cb" onclick="cal()" checked="checked">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_ld_n5"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_ld_n5cb" onclick="cal()" checked="checked">
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th style="text-align:left" class="custd">月卡</th>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_fd_n6"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_fd_n6cb" onclick="cal()">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_md_n6"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_md_n6cb" onclick="cal()" checked="checked">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_ld_n6"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_ld_n6cb" onclick="cal()" checked="checked">
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th style="text-align:left" class="custd">轉換每天所得合金</th>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_fd_n7"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_fd_n7cb" onclick="cal()">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_md_n7"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_md_n7cb" onclick="cal()">
+                                    </td>
+                                    <td style="text-align:center" class="custd custdleft" id="id_th_ld_n7"> - </td>
+                                    <td style="text-align:center" class="custd">
+                                        <input type="checkbox" id="id_cb_ld_n7cb" onclick="cal()">
+                                    </td>
+                                </tr>
+
+
+                                <tr>
+                                    <th style="text-align:left" rowspan="4" class="custd">總結</th>
+                                    <th style="text-align:center" colspan="2" rowspan="2" id="id_th_fd_t" class="custd custdleft"> - </th>
+                                    <th style="text-align:center" colspan="2" id="id_th_md_t1" class="custd custdleft"> - </th>
+                                    <th style="text-align:center" colspan="2" rowspan="2" id="id_th_ld_t" class="custd custdleft"> - </th>
+                                </tr>
+                                <tr>
+                                    <th style="text-align:center" colspan="2" id="id_th_md_t2" class="custd custdleft"> - </th>
+                                </tr>
+                                <tr>
+                                    <th style="text-align:center" colspan="6" id="id_th_t1" class="custd custdleft"> - </th>
+                                </tr>
+                                <tr>
+                                    <th style="text-align:center" colspan="6" id="id_th_t2" class="custd custdleft"> - </th>
+                                </tr>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- My Code： Suggest -->
+                    <section>
+                        <div class="reveal-on-scroll is-revealing pl1 pr1">
+                            <div id="id_div_suggest" style="display: none" class="grid-column span-whole mt1">
+                                <strong>建議每天購買</strong>
+                                <p class="pt1">
+                                    第 1 天已購買
+                                    <select id="id_sel_buy" class="0-10buy" onchange="cal()" style="width: 20%"></select>
+                                    次體力
+                                </p>
+                                <p class="pb1">
+                                    第 1 天不購買體力
+                                    <input type='checkbox' id='id_cb_buy' onclick='cal()'>
+                                </p>
+                                <p id="id_p_suggest_table">
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- End -->
+                    <section class="column--center pt1 pb3">
+                    </section>
+
+                </div>
+
+            </main>
+
+
+
+        </div>
+    </div>
+    <!-- Scroll reveal -->
+    <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
+
+    <!-- The compiled JavaScript file -->
+    <script src="js/production.js"></script>
+
+
+
+</body>
+<!--    // End ======================== Body ========================-->
+
+</html>
